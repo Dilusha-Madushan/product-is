@@ -183,6 +183,7 @@ public class UserSharingSuccessTest extends UserSharingBaseTest {
         cleanUpOrganizations();
         cleanUpDetailMaps();
         closeRestClients();
+        super.testConclude();
     }
 
     @DataProvider(name = "restAPIUserConfigProvider")

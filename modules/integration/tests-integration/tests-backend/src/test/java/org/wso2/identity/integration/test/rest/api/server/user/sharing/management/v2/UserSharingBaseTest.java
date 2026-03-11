@@ -661,6 +661,11 @@ public class UserSharingBaseTest extends RESTAPIServerTestBase {
     private Map<String, String> getUserNameAndUserDomain(String domainQualifiedUserName) {
 
         String[] parts = domainQualifiedUserName.split(PATH_SEPARATOR);
+        if (parts.length < 2) {
+            throw new IllegalArgumentException(
+                    "Invalid domain-qualified username: '" + domainQualifiedUserName +
+                    "'. Expected format: '<domain>" + PATH_SEPARATOR + "<username>'.");
+        }
         Map<String, String> userNameAndUserDomain = new HashMap<>();
         userNameAndUserDomain.put(MAP_USER_DOMAIN_QUALIFIED_USER_NAME_USER_NAME, parts[1]);
         userNameAndUserDomain.put(MAP_USER_DOMAIN_QUALIFIED_USER_NAME_USER_DOMAIN, parts[0]);
@@ -689,7 +694,7 @@ public class UserSharingBaseTest extends RESTAPIServerTestBase {
     protected void validateUserSharingResults(List<String> userIds, Map<String, Object> expectedResults)
             throws Exception {
 
-        final Object[] lastException = {null};
+        final Throwable[] lastThrowable = {null};
 
         // Waits up to 20 seconds, checking every 2 seconds.
         await().atMost(20, TimeUnit.SECONDS)
@@ -701,18 +706,20 @@ public class UserSharingBaseTest extends RESTAPIServerTestBase {
                             validateUserHasBeenSharedToExpectedOrgsWithExpectedRoles(userId, expectedResults);
                         }
                         // If we reach here, all assertions passed
-                        lastException[0] = null;
+                        lastThrowable[0] = null;
                         return true;
                     } catch (AssertionError | Exception e) {
                         // Catch the failure, save it, and return false to trigger the next poll
-                        lastException[0] = e;
+                        lastThrowable[0] = e;
                         return false;
                     }
                 });
 
-        // If the 20 seconds run out and it still failed, throw the last caught exception
-        if (lastException[0] != null) {
-            throw (Exception) lastException[0];
+        // If the 20 seconds run out and it still failed, throw the last caught throwable
+        if (lastThrowable[0] instanceof AssertionError) {
+            throw (AssertionError) lastThrowable[0];
+        } else if (lastThrowable[0] != null) {
+            throw (Exception) lastThrowable[0];
         }
     }
 

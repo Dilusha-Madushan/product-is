@@ -114,6 +114,7 @@ public class UserSharingFailureTest extends UserSharingBaseTest {
         cleanUpOrganizations();
         cleanUpDetailMaps();
         closeRestClients();
+        super.testConclude();
     }
 
     @DataProvider(name = "restAPIUserConfigProvider")
